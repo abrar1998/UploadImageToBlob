@@ -96,7 +96,84 @@ namespace UploadImageToBlob.Controllers
         {
             return View(StudentData);
         }
-    
+
+        //upload image/pdf and video
+
+        [HttpGet]
+        public IActionResult UploadData()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadData(MediaModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // Upload Photo
+                    if (model.photo != null && model.photo.Length > 0)
+                    {
+                        string photoUrl = await UploadToBlob(model.photo, "images");
+                        model.PhotoUrl = photoUrl;
+                    }
+
+                    // Upload PDF
+                    if (model.pdf != null && model.pdf.Length > 0)
+                    {
+                        string pdfUrl = await UploadToBlob(model.pdf, "documents");
+                        model.PdfUrl = pdfUrl;
+                    }
+
+                    // Upload Video
+                    if (model.video != null && model.video.Length > 0)
+                    {
+                        string videoUrl = await UploadToBlob(model.video, "videos");
+                        model.VideoUrl = videoUrl;
+                    }
+
+                    return View(model);
+                    // Save model.PhotoUrl, model.PdfUrl, model.VideoUrl to the database
+                    // Logic for saving the data can go here
+                }
+                catch (Exception ex)
+                {
+                    ViewBag.ErrorMessage = "An error occurred while uploading the files.";
+                    // Log the exception here
+                }
+            }
+
+            return View(model);
+        }
+
+        private async Task<string> UploadToBlob(IFormFile file, string containerName)
+        {
+            // Get the container client for the specified container (images, documents, videos)
+            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+
+            // Check if the container exists, otherwise create it
+            if (!containerClient.Exists())
+            {
+                await containerClient.CreateAsync();
+                await containerClient.SetAccessPolicyAsync(Azure.Storage.Blobs.Models.PublicAccessType.Blob);
+            }
+
+            // Generate a unique file name with a GUID and the file extension
+            string blobName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+
+            // Upload the file to Azure Blob Storage
+            BlobClient blobClient = containerClient.GetBlobClient(blobName);
+            using (var stream = file.OpenReadStream())
+            {
+                await blobClient.UploadAsync(stream, overwrite: true);
+            }
+
+            // Return the URI of the uploaded blob
+            return blobClient.Uri.ToString();
+        }
+
+
 
         public IActionResult Index()
         {

@@ -1,0 +1,74 @@
+﻿@model UploadImageToBlob.Models.MediaModel
+
+@{
+    ViewData["Title"] = "UploadData";
+}
+
+<h1>UploadData</h1>
+
+<h4>MediaModel</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="UploadData" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="photo" class="control-label"></label>
+                <input asp-for="photo" type="file" class="form-control" />
+                <span asp-validation-for="photo" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="pdf" class="control-label"></label>
+                <input asp-for="pdf" type="file" class="form-control" />
+                <span asp-validation-for="pdf" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="video" class="control-label"></label>
+                <input asp-for="video" type="file" class="form-control" />
+                <span asp-validation-for="video" class="text-danger"></span>
+            </div>
+            <br />
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@if(Model !=null)
+{
+    <table class="table table-bordered">
+
+        <thead>
+            <tr>
+                <th>Image</th>
+                <th>Pdf</th>
+                <th>Video</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <img src="@Model.PhotoUrl" alt="Uploaded Photo" width="200" />
+                </td>
+                <td>
+                    <a href="@Model.PdfUrl" target="_blank">View PDF</a>
+                </td>
+                <td>
+                    <video width="320" height="240" controls>
+                        <source src="@Model.VideoUrl" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+}
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
